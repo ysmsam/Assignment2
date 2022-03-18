@@ -10,18 +10,11 @@ DECLARE
 			
 			v_account_no 	account.account_no%TYPE;
 	
-	CURSOR c_history IS
-		SELECT transaction_no, transaction_date, description
-			FROM transaction_history;
 			
 			v_transaction_no 	transaction_history.transaction_no%TYPE;
 			v_transaction_date 	transaction_history.transaction_date%TYPE;
 			v_transaction_description 	transaction_history.description%TYPE;
-			
-	CURSOR c_detail IS
-		SELECT account_no, transaction_no, transaction_type, transaction_amount
-			FROM transaction_detail
-			WHERE transaction_no = v_transaction_no AND account_no = v_account_no;
+
 
 			
 			v_transaction_type 	transaction_detail.transaction_type%TYPE;
@@ -43,23 +36,16 @@ BEGIN
 			FROM new_transactions
 			WHERE v_transaction_no = r_transactions.transaction_no;
 		
-		FOR r_history IN c_history LOOP
 			
-			-- insert data into history TABLE
-			INSERT INTO transaction_history
-			VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
-			
-			
-			FOR r_detail IN c_detail LOOP
-				
-				-- insert data into detail TABLE
-				INSERT INTO transaction_detail
-				VALUES (v_account_no, v_transaction_no, v_transaction_type, v_transaction_amount);
-			
-				
-				
-			END LOOP;
-		END LOOP;
+		-- insert data into history TABLE
+		INSERT INTO transaction_history
+		VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
+		
+		
+		-- insert data into detail TABLE
+		INSERT INTO transaction_detail
+		VALUES (v_account_no, v_transaction_no, v_transaction_type, v_transaction_amount);
+
 		
 		
 		-- update account TABLE
