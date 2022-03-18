@@ -1,6 +1,7 @@
 DECLARE
 	CURSOR c_transactions IS
-		SELECT DISTINCT transaction_no, transaction_date, description
+		-- SELECT DISTINCT transaction_no, transaction_date, description
+		SELECT DISTINCT *
 			FROM new_transactions;
 			
 	CURSOR c_transactions_2 IS
@@ -12,28 +13,31 @@ DECLARE
 			FROM account
 			FOR UPDATE;
 			
-			v_account_no 	NUMBER;
-			v_account_balance 	NUMBER;
+			v_account_no 	 NUMBER;
+			v_account_balance  	NUMBER;
 			-- v_account_type_code 	account.account_type_code%TYPE;
 			
 			v_account_trans_type 	account_type.default_trans_type%TYPE;
 	
 			
-			v_transaction_no 	NUMBER;
-			v_transaction_date 	DATE;
-			v_transaction_description 	VARCHAR2(100);
-
-
+			v_transaction_no 	 NUMBER;
+			v_transaction_date  	DATE;
+			v_transaction_description 	 VARCHAR2(100);
+			v_transaction_type  	CHAR(1);
+			v_transaction_amount   	NUMBER;
 			
-			v_transaction_type 	CHAR(1);
-			v_transaction_amount 	NUMBER;
+			v_account_no_2 	  NUMBER;
+			v_transaction_no_2  	NUMBER;
+			v_transaction_date_2  	DATE;
+			v_transaction_description_2  	VARCHAR2(100);
+			v_transaction_type_2 	 CHAR(1);
+			v_transaction_amount_2  	NUMBER;
 	
 			
 BEGIN
 
 	FOR r_transactions IN c_transactions LOOP
 		BEGIN
-		
 			v_account_no := r_transactions.account_no;
 			-- v_transaction_no := r_transactions.transaction_no;
 			v_transaction_date := r_transactions.transaction_date;
@@ -44,7 +48,7 @@ BEGIN
 			SELECT DISTINCT transaction_no, transaction_date, description
 				INTO v_transaction_no, v_transaction_date, v_transaction_description
 				FROM new_transactions
-				WHERE v_transaction_no = r_transactions.transaction_no;
+				WHERE transaction_no = r_transactions.transaction_no;
 			
 				
 			-- insert data into history TABLE
@@ -52,11 +56,19 @@ BEGIN
 			VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
 			
 			FOR r_transactions_2 IN c_transactions_2 LOOP
+			
+			v_account_no_2 := r_transactions_2.account_no;
+			v_transaction_no_2 := r_transactions_2.transaction_no;
+			-- v_transaction_date_2 := r_transactions_2.transaction_date;
+			v_transaction_type_2 := r_transactions_2.transaction_type;
+			-- v_transaction_description_2 := r_transactions_2.description;
+			v_transaction_amount_2 := r_transactions_2.transaction_amount;
 				
 				-- insert data into detail TABLE
-				INSERT INTO transaction_detail
-				VALUES (v_account_no, v_transaction_no, v_transaction_type, v_transaction_amount);
-					
+				IF(v_transaction_no_2 = v_transaction_no) THEN
+					INSERT INTO transaction_detail
+					VALUES (v_account_no_2, v_transaction_no_2, v_transaction_type_2, v_transaction_amount_2);
+				END IF;	
 			END LOOP;
 			
 			FOR r_account IN c_account LOOP
@@ -88,7 +100,6 @@ BEGIN
 			
 		END;
 	END LOOP;
-
 
 END;
 /
