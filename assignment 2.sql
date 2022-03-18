@@ -41,19 +41,26 @@ BEGIN
 		INSERT INTO transaction_history
 		VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
 		
+		FOR r_account IN c_account LOOP
 		
-		-- insert data into detail TABLE
-		INSERT INTO transaction_detail
-		VALUES (v_account_no, v_transaction_no, v_transaction_type, v_transaction_amount);
+			-- insert data into detail TABLE
+			INSERT INTO transaction_detail
+			VALUES (v_account_no, v_transaction_no, v_transaction_type, v_transaction_amount);
 
 		
+			-- update account TABLE
+			IF(v_transaction_type = account_type_code) THEN
+			UPDATE ACCOUNT
+				SET account_balance = account_balance + v_transaction_amount
+				WHERE account_no = v_account_no;
+			END IF;
 		
-		-- update account TABLE
-		IF(v_transaction_type = account_type_code) THEN
-		UPDATE ACCOUNT
-			SET account_balance = account_balance + v_transaction_amount
-			WHERE account_no = v_account_no;
-		END IF;
+		END LOOP;
+		
+		
+		
+		
+		
 		
 		-- delete the row in new_transactions
 		
