@@ -61,6 +61,14 @@ BEGIN
 			END LOOP;
 		END LOOP;
 		
+		
+		-- update account TABLE
+		IF(v_transaction_type = account_type_code) THEN
+		UPDATE ACCOUNT
+			SET account_balance = account_balance + v_transaction_amount
+			WHERE account_no = v_account_no;
+		END IF;
+		
 		-- delete the row in new_transactions
 		
 	END LOOP;
