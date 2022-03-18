@@ -1,10 +1,7 @@
 DECLARE
 	CURSOR c_transactions IS
-		-- SELECT DISTINCT transaction_no, transaction_date, description, account_no, transaction_type, transaction_amount
 		SELECT DISTINCT transaction_no, transaction_date, description
 			FROM new_transactions;
-			
-			
 				
 			v_transaction_no 	 NUMBER;
 			v_transaction_date  	DATE;
