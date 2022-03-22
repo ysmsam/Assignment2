@@ -136,7 +136,7 @@ BEGIN
 			DELETE FROM new_transactions WHERE transaction_no = r_transactions.transaction_no;
 			
 			
-			--COMMIT;
+			COMMIT;
 			
 			-- EXCEPTION
 			EXCEPTION
@@ -148,7 +148,7 @@ BEGIN
 					(error_msg)
 					VALUES(v_error_msg);
 					
-					--COMMIT;
+					COMMIT;
 					
 				WHEN ex_invaid_1 THEN
 					DBMS_OUTPUT.PUT_LINE('Negative Value given for a transaction amount');
