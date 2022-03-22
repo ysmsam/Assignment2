@@ -29,6 +29,7 @@ DECLARE
 			ex_nodatafound_1 	EXCEPTION;
 			ex_invaid_1 	EXCEPTION;
 			ex_invaid_2 	EXCEPTION;
+			ex_not_equal 	EXCEPTION;
 			
 			v_debit_value 	NUMBER;
 			v_credit_value 	NUMBER;
@@ -65,15 +66,31 @@ BEGIN
 					v_account_no_2 := r_transactions_2.account_no;
 					-- Invalid account number
 			
-					
+					-- Negative value given for a transaction amount
 					IF r_transactions_2.transaction_amount < 0 THEN
 						RAISE ex_invaid_1;
 					ELSE
 						v_transaction_amount_2 := r_transactions_2.transaction_amount;
 					END IF;
 					
-					
-					-- Invalid transaction type & initialize v_transaction_type_2
+					-- Debits and credits are not equal
+					SELECT transaction_amount
+						INTO v_debit_value
+						FROM new_transactions
+						WHERE transaction_no = r_transactions_2.transaction_no 
+							AND r_transactions_2.transaction_type = k_transaction_type_debit;
+							
+					SELECT transaction_amount
+						INTO v_credit_value
+						FROM new_transactions
+						WHERE transaction_no = r_transactions_2.transaction_no 
+							AND r_transactions_2.transaction_type = k_transaction_type_credit;
+							
+					IF v_debit_value != v_credit_value THEN
+						RAISE ex_not_equal;
+					END IF;
+									
+					-- Invalid transaction type
 					IF r_transactions_2.transaction_type != k_transaction_type_credit OR r_transactions_2.transaction_type != k_transaction_type_debit THEN
 						RAISE ex_invaid_2;
 					ELSE
@@ -137,6 +154,9 @@ BEGIN
 				
 				WHEN ex_invaid_2 THEN
 					DBMS_OUTPUT.PUT_LINE('Invalid transaction type');
+					
+				WHEN ex_not_equal THEN
+					DBMS_OUTPUT.PUT_LINE('Debits and credits are not equal');
 			
 			
 		END;
