@@ -13,7 +13,7 @@ DECLARE
 			WHERE transaction_no = v_transaction_no;
 			
 	CURSOR c_transactions_3 IS
-		SELECT transaction_no, SUM(transaction_amount)
+		SELECT transaction_no, SUM(transaction_amount) transaction_amount_3
 				FROM new_transactions
 				GROUP BY transaction_no;
 			
@@ -59,6 +59,15 @@ BEGIN
 			
 			v_transaction_date := r_transactions.transaction_date;
 			v_transaction_description := r_transactions.description;
+			
+			-- Debits and credits are not equal
+			FOR r_transactions_3 IN c_transactions_3 LOOP
+				v_transaction_amount_3 := r_transactions_3.transaction_amount_3;
+				IF v_transaction_amount_3 != 0 THEN
+					RAISE ex_not_equal;
+				END IF;
+			END LOOP;
+			
 				
 			-- insert data into history TABLE
 			INSERT INTO transaction_history
@@ -80,23 +89,6 @@ BEGIN
 						RAISE ex_invaid_1;
 					ELSE
 						v_transaction_amount_2 := r_transactions_2.transaction_amount;
-					END IF;
-					
-					-- Debits and credits are not equal
-					SELECT transaction_amount
-						INTO v_debit_value
-						FROM new_transactions
-						WHERE transaction_no = r_transactions_2.transaction_no 
-							AND r_transactions_2.transaction_type = k_transaction_type_debit;
-							
-					SELECT transaction_amount
-						INTO v_credit_value
-						FROM new_transactions
-						WHERE transaction_no = r_transactions_2.transaction_no 
-							AND r_transactions_2.transaction_type = k_transaction_type_credit;
-							
-					IF v_debit_value != v_credit_value THEN
-						RAISE ex_not_equal;
 					END IF;
 									
 					-- Invalid transaction type
