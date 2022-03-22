@@ -12,6 +12,11 @@ DECLARE
 			FROM new_transactions
 			WHERE transaction_no = v_transaction_no;
 			
+	CURSOR c_transactions_3 IS
+		SELECT transaction_no, SUM(transaction_amount)
+				FROM new_transactions
+				GROUP BY transaction_no;
+			
 			v_account_no 	 NUMBER;
 			v_account_balance  	NUMBER;
 
@@ -24,6 +29,10 @@ DECLARE
 			v_transaction_description_2  	VARCHAR2(100);
 			v_transaction_type_2 	 CHAR(1);
 			v_transaction_amount_2  	NUMBER;
+			
+			v_transaction_no_3  	NUMBER;
+			v_transaction_type_3 	 CHAR(1);
+			v_transaction_amount_3  	NUMBER;
 			
 			v_error_msg 	wkis_error_log.error_msg%TYPE;
 			ex_nodatafound_1 	EXCEPTION;
