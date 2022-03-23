@@ -12,10 +12,9 @@ DECLARE
 			FROM new_transactions
 			WHERE transaction_no = v_transaction_no;
 			
-	CURSOR c_transactions_3 IS
-		SELECT transaction_no, SUM(transaction_amount) transaction_amount_3
-				FROM new_transactions
-				GROUP BY transaction_no;
+	--CURSOR c_transactions_3 IS
+	--	SELECT transaction_no, transaction_type, transaction_amount transaction_amount_3
+	--			FROM new_transactions;
 			
 			v_account_no 	 NUMBER;
 			v_account_balance  	NUMBER;
@@ -49,29 +48,48 @@ DECLARE
 			
 BEGIN
 
+	-- Debits and credits are not equal
+	SELECT SUM(transaction_amount)
+		INTO v_debit_value
+		FROM new_transactions
+		WHERE transaction_type = k_transaction_type_debit;
+		
+	SELECT SUM(transaction_amount)
+		INTO v_credit_value
+		FROM new_transactions
+		WHERE transaction_type = k_transaction_type_credit;
+		
+	IF v_debit_value != v_credit_value THEN
+		RAISE ex_not_equal;
+	END IF;
+
+
 	FOR r_transactions IN c_transactions LOOP
 		BEGIN
 
 			v_transaction_no := r_transactions.transaction_no;
-			IF SQL%NOTFOUND THEN
-				RAISE ex_nodatafound_1;
-			END IF;
+			--IF SQL%NOTFOUND THEN
+			--	RAISE ex_nodatafound_1;
+			--END IF;
 			
 			v_transaction_date := r_transactions.transaction_date;
 			v_transaction_description := r_transactions.description;
-			
-			-- Debits and credits are not equal
-			FOR r_transactions_3 IN c_transactions_3 LOOP
-				v_transaction_amount_3 := r_transactions_3.transaction_amount_3;
-				IF v_transaction_amount_3 != 0 THEN
-					RAISE ex_not_equal;
-				END IF;
-			END LOOP;
 			
 				
 			-- insert data into history TABLE
 			INSERT INTO transaction_history
 			VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
+			IF (SQL%NOTFOUND OR r_transactions.transaction_no=NULL) THEN
+				RAISE ex_nodatafound_1;
+			END IF;
+		
+			v_transaction_amount_3 := r_transactions.transaction_no;
+			v_debit_value := 0;
+			v_credit_value := 0;
+				
+				
+			END LOOP;
+			
 
 				FOR r_transactions_2 IN c_transactions_2 LOOP					
 					
@@ -83,7 +101,7 @@ BEGIN
 					
 					v_account_no_2 := r_transactions_2.account_no;
 					-- Invalid account number
-			
+					
 					-- Negative value given for a transaction amount
 					IF r_transactions_2.transaction_amount < 0 THEN
 						RAISE ex_invaid_1;
@@ -96,6 +114,19 @@ BEGIN
 						RAISE ex_invaid_2;
 					ELSE
 						v_transaction_type_2 := r_transactions_2.transaction_type;
+						--IF r_transactions_2.transaction_no_2 = v_transaction_no_2 THEN
+						-- Debits and credits are not equal
+						IF r_transactions_3.transaction_type = k_transaction_type_debit THEN
+							SELECT SUM(transaction_amount)
+								INTO v_debit_value
+								FROM new_transactions
+								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
+						ELSIF r_transactions_3.transaction_type = k_transaction_type_credit THEN 
+							SELECT SUM(transaction_amount)
+								INTO v_debit_value
+								FROM new_transactions
+								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
+						END IF;
 					END IF;
 					
 					
