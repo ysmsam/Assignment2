@@ -94,7 +94,7 @@ BEGIN
 					END IF;
 									
 					-- Invalid transaction type
-					IF r_transactions_2.transaction_type != k_transaction_type_credit OR r_transactions_2.transaction_type != k_transaction_type_debit THEN
+					IF r_transactions_2.transaction_type <> k_transaction_type_credit OR r_transactions_2.transaction_type <> k_transaction_type_debit THEN
 						RAISE ex_invaid_2;
 					ELSE
 						v_transaction_type_2 := r_transactions_2.transaction_type;
@@ -107,12 +107,12 @@ BEGIN
 								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
 						ELSIF r_transactions_3.transaction_type = k_transaction_type_credit THEN 
 							SELECT SUM(transaction_amount)
-								INTO v_debit_value
+								INTO v_credit_value
 								FROM new_transactions
 								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
 						END IF;
 						
-						IF	v_debit_value != v_credit_value THEN
+						IF	v_debit_value <> v_credit_value THEN
 							ex_not_equal;
 						END IF;
 						
