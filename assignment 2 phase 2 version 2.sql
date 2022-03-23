@@ -9,7 +9,7 @@ DECLARE
 			
 	CURSOR c_transactions_2 IS
 		SELECT *
-			FROM new_transactions;
+			FROM new_transactions
 			WHERE transaction_no = v_transaction_no;
 			
 			v_account_no 	 NUMBER;
