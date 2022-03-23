@@ -52,12 +52,15 @@ BEGIN
 		BEGIN
 
 			-- Missing transaction number (NULL transaction number)
-			SELECT DISTINCT transaction_no 
-				INTO v_transaction_no
-				FROM new_transactions
-				WHERE transaction_no = r_transactions.transaction_no;
-			IF SQL%NOTFOUND THEN
-				RAISE ex_nodatafound_1;
+			--SELECT transaction_no 
+			--	INTO v_transaction_no
+			--	FROM new_transactions
+			--	WHERE transaction_no = r_transactions.transaction_no;
+			IF (SQL%NOTFOUND OR r_transactions.transaction_no = NULL) THEN
+				--RAISE ex_nodatafound_1;
+				RAISE_APPLICATION_ERROR(-20010, 'transaction no is null');
+			ELSE
+				v_transaction_no := r_transactions.transaction_no;
 			END IF;
 			
 			v_transaction_date := r_transactions.transaction_date;
@@ -188,7 +191,8 @@ BEGIN
 				WHEN ex_not_equal THEN
 					DBMS_OUTPUT.PUT_LINE('Debits and credits are not equal');
 			
-			
+				WHEN OTHERS THEN
+					ROLLBACK;
 		END;
 	END LOOP;
 
