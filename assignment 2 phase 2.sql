@@ -51,10 +51,14 @@ BEGIN
 	FOR r_transactions IN c_transactions LOOP
 		BEGIN
 
-			v_transaction_no := r_transactions.transaction_no;
-			--IF SQL%NOTFOUND THEN
-			--	RAISE ex_nodatafound_1;
-			--END IF;
+			-- Missing transaction number (NULL transaction number)
+			SELECT transaction_no 
+				INTO v_transaction_no
+				FROM new_transactions
+				WHERE transaction_no = r_transactions.transaction_no;
+			IF SQL%NOTFOUND THEN
+				RAISE ex_nodatafound_1;
+			END IF;
 			
 			v_transaction_date := r_transactions.transaction_date;
 			v_transaction_description := r_transactions.description;
@@ -74,16 +78,22 @@ BEGIN
 				
 			END LOOP;
 			
-
 				FOR r_transactions_2 IN c_transactions_2 LOOP					
-					
-					v_transaction_no_2 := r_transactions_2.transaction_no;
+
+					SELECT transaction_no 
+						INTO v_transaction_no_2
+						FROM new_transactions
+						WHERE transaction_no = r_transactions_2.transaction_no;
 					-- Missing transaction number (NULL transaction number)
 					IF SQL%NOTFOUND THEN
 						RAISE ex_nodatafound_1;
 					END IF;
 					
-					v_account_no_2 := r_transactions_2.account_no;
+					
+					SELECT account_no 
+						INTO v_account_no_2 
+						FROM new_transactions
+						WHERE account_no = r_transactions_2.account_no;
 					-- Invalid account number
 					
 					-- Negative value given for a transaction amount
@@ -94,10 +104,13 @@ BEGIN
 					END IF;
 									
 					-- Invalid transaction type
+					SELECT transaction_type 
+						INTO v_transaction_type_2
+						FROM new_transactions
+						WHERE transaction_type = r_transactions_2.transaction_type;
 					IF r_transactions_2.transaction_type <> k_transaction_type_credit OR r_transactions_2.transaction_type <> k_transaction_type_debit THEN
 						RAISE ex_invaid_2;
 					ELSE
-						v_transaction_type_2 := r_transactions_2.transaction_type;
 						--IF r_transactions_2.transaction_no_2 = v_transaction_no_2 THEN
 						-- Debits and credits are not equal
 						IF r_transactions_3.transaction_type = k_transaction_type_debit THEN
