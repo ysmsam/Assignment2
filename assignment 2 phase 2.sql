@@ -52,7 +52,7 @@ BEGIN
 		BEGIN
 
 			-- Missing transaction number (NULL transaction number)
-			SELECT transaction_no 
+			SELECT DISTINCT transaction_no 
 				INTO v_transaction_no
 				FROM new_transactions
 				WHERE transaction_no = r_transactions.transaction_no;
@@ -67,20 +67,16 @@ BEGIN
 			-- insert data into history TABLE
 			INSERT INTO transaction_history
 			VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
-			IF (SQL%NOTFOUND OR r_transactions.transaction_no=NULL) THEN
+			IF (SQL%NOTFOUND) THEN
 				RAISE ex_nodatafound_1;
 			END IF;
-		
-			v_transaction_amount_3 := r_transactions.transaction_no;
+
 			v_debit_value := 0;
 			v_credit_value := 0;
-				
-				
-			END LOOP;
 			
 				FOR r_transactions_2 IN c_transactions_2 LOOP					
 
-					SELECT transaction_no 
+					SELECT DISTINCT transaction_no 
 						INTO v_transaction_no_2
 						FROM new_transactions
 						WHERE transaction_no = r_transactions_2.transaction_no;
@@ -90,7 +86,7 @@ BEGIN
 					END IF;
 					
 					
-					SELECT account_no 
+					SELECT DISTINCT account_no 
 						INTO v_account_no_2 
 						FROM new_transactions
 						WHERE account_no = r_transactions_2.account_no;
@@ -104,7 +100,7 @@ BEGIN
 					END IF;
 									
 					-- Invalid transaction type
-					SELECT transaction_type 
+					SELECT DISTINCT transaction_type 
 						INTO v_transaction_type_2
 						FROM new_transactions
 						WHERE transaction_type = r_transactions_2.transaction_type;
@@ -113,20 +109,20 @@ BEGIN
 					ELSE
 						--IF r_transactions_2.transaction_no_2 = v_transaction_no_2 THEN
 						-- Debits and credits are not equal
-						IF r_transactions_3.transaction_type = k_transaction_type_debit THEN
+						IF r_transactions_2.transaction_type = k_transaction_type_debit THEN
 							SELECT SUM(transaction_amount)
 								INTO v_debit_value
 								FROM new_transactions
-								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
-						ELSIF r_transactions_3.transaction_type = k_transaction_type_credit THEN 
+								WHERE r_transactions_2.transaction_no = v_transaction_no;
+						ELSIF r_transactions_2.transaction_type = k_transaction_type_credit THEN 
 							SELECT SUM(transaction_amount)
 								INTO v_credit_value
 								FROM new_transactions
-								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
+								WHERE r_transactions_2.transaction_no = v_transaction_no;
 						END IF;
 						
 						IF	v_debit_value <> v_credit_value THEN
-							ex_not_equal;
+							RAISE ex_not_equal;
 						END IF;
 						
 					END IF;
