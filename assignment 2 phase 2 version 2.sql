@@ -52,10 +52,6 @@ BEGIN
 		BEGIN
 
 			-- Missing transaction number (NULL transaction number)
-			--SELECT transaction_no 
-			--	INTO v_transaction_no
-			--	FROM new_transactions
-			--	WHERE transaction_no = r_transactions.transaction_no;
 			IF (SQL%NOTFOUND OR r_transactions.transaction_no is null) THEN
 				RAISE ex_nodatafound_1;
 				--RAISE_APPLICATION_ERROR(-20010, 'transaction no is null');
@@ -68,27 +64,12 @@ BEGIN
 				INSERT INTO transaction_history
 				VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
 			END IF;
-			
-			--v_transaction_date := r_transactions.transaction_date;
-			--v_transaction_description := r_transactions.description;
-			
-				
-			-- insert data into history TABLE
-			--INSERT INTO transaction_history
-			--VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
-			--IF (SQL%NOTFOUND) THEN
-			--	RAISE ex_nodatafound_1;
-			--END IF;
 
 			v_debit_value := 0;
 			v_credit_value := 0;
 			
 				FOR r_transactions_2 IN c_transactions_2 LOOP					
 
-					--SELECT DISTINCT transaction_no 
-					--	INTO v_transaction_no_2
-					--	FROM new_transactions
-					--	WHERE transaction_no = r_transactions_2.transaction_no;
 					-- Missing transaction number (NULL transaction number)
 					IF (SQL%NOTFOUND OR r_transactions.transaction_no is null) THEN
 						RAISE ex_nodatafound_1;
@@ -96,11 +77,6 @@ BEGIN
 						v_transaction_no_2 := r_transactions_2.transaction_no;
 					END IF;
 					
-					
-					--SELECT DISTINCT account_no 
-					--	INTO v_account_no_2 
-					--	FROM new_transactions
-					--	WHERE account_no = r_transactions_2.account_no;
 					-- Invalid account number
 					v_account_no_2 := r_transactions_2.account_no;
 					
@@ -112,13 +88,10 @@ BEGIN
 					END IF;
 									
 					-- Invalid transaction type
-					SELECT DISTINCT transaction_type 
-						INTO v_transaction_type_2
-						FROM new_transactions
-						WHERE transaction_type = r_transactions_2.transaction_type;
 					IF r_transactions_2.transaction_type <> k_transaction_type_credit OR r_transactions_2.transaction_type <> k_transaction_type_debit THEN
 						RAISE ex_invaid_2;
 					ELSE
+						v_transaction_type_2 := r_transactions_2.transaction_type;
 						--IF r_transactions_2.transaction_no_2 = v_transaction_no_2 THEN
 						-- Debits and credits are not equal
 						IF r_transactions_2.transaction_type = k_transaction_type_debit THEN
@@ -174,7 +147,7 @@ BEGIN
 			-- END LOOP;
 			
 			-- delete the row in new_transactions
-			DELETE FROM new_transactions WHERE transaction_no = r_transactions.transaction_no;
+			DELETE new_transactions WHERE transaction_no = r_transactions.transaction_no;
 			
 			
 			COMMIT;
