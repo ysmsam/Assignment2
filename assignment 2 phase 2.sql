@@ -56,23 +56,29 @@ BEGIN
 			--	INTO v_transaction_no
 			--	FROM new_transactions
 			--	WHERE transaction_no = r_transactions.transaction_no;
-			IF (SQL%NOTFOUND OR r_transactions.transaction_no = NULL) THEN
-				--RAISE ex_nodatafound_1;
-				RAISE_APPLICATION_ERROR(-20010, 'transaction no is null');
+			IF (SQL%NOTFOUND OR r_transactions.transaction_no is null) THEN
+				RAISE ex_nodatafound_1;
+				--RAISE_APPLICATION_ERROR(-20010, 'transaction no is null');
 			ELSE
 				v_transaction_no := r_transactions.transaction_no;
+				
+				v_transaction_date := r_transactions.transaction_date;
+				v_transaction_description := r_transactions.description;
+				
+				INSERT INTO transaction_history
+				VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
 			END IF;
 			
-			v_transaction_date := r_transactions.transaction_date;
-			v_transaction_description := r_transactions.description;
+			--v_transaction_date := r_transactions.transaction_date;
+			--v_transaction_description := r_transactions.description;
 			
 				
 			-- insert data into history TABLE
-			INSERT INTO transaction_history
-			VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
-			IF (SQL%NOTFOUND) THEN
-				RAISE ex_nodatafound_1;
-			END IF;
+			--INSERT INTO transaction_history
+			--VALUES (v_transaction_no, v_transaction_date, v_transaction_description);
+			--IF (SQL%NOTFOUND) THEN
+			--	RAISE ex_nodatafound_1;
+			--END IF;
 
 			v_debit_value := 0;
 			v_credit_value := 0;
@@ -180,7 +186,7 @@ BEGIN
 					(error_msg)
 					VALUES(v_error_msg);
 					
-					COMMIT;
+					--COMMIT;
 					
 				WHEN ex_invaid_1 THEN
 					DBMS_OUTPUT.PUT_LINE('Negative Value given for a transaction amount');
@@ -191,8 +197,8 @@ BEGIN
 				WHEN ex_not_equal THEN
 					DBMS_OUTPUT.PUT_LINE('Debits and credits are not equal');
 			
-				WHEN OTHERS THEN
-					ROLLBACK;
+				--WHEN OTHERS THEN
+				--	ROLLBACK;
 		END;
 	END LOOP;
 
