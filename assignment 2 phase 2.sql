@@ -48,22 +48,6 @@ DECLARE
 			
 BEGIN
 
-	-- Debits and credits are not equal
-	SELECT SUM(transaction_amount)
-		INTO v_debit_value
-		FROM new_transactions
-		WHERE transaction_type = k_transaction_type_debit;
-		
-	SELECT SUM(transaction_amount)
-		INTO v_credit_value
-		FROM new_transactions
-		WHERE transaction_type = k_transaction_type_credit;
-		
-	IF v_debit_value != v_credit_value THEN
-		RAISE ex_not_equal;
-	END IF;
-
-
 	FOR r_transactions IN c_transactions LOOP
 		BEGIN
 
@@ -127,6 +111,11 @@ BEGIN
 								FROM new_transactions
 								WHERE r_transactions_2.transaction_no_2 = v_transaction_no_2;
 						END IF;
+						
+						IF	v_debit_value != v_credit_value THEN
+							ex_not_equal;
+						END IF;
+						
 					END IF;
 					
 					
