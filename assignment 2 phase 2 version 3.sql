@@ -9,7 +9,7 @@ DECLARE
 			
 	CURSOR c_transactions_2 IS
 		SELECT *
-			FROM new_transactions;
+			FROM new_transactions
 			WHERE transaction_no = v_transaction_no;
 			
 			v_account_no 	 NUMBER;
@@ -67,76 +67,76 @@ BEGIN
 						RAISE ex_nodatafound_1;
 					ELSE
 						v_transaction_no_2 := r_transactions_2.transaction_no;
-					END IF;
-					
-					-- Invalid account number
-					v_account_no_2 := r_transactions_2.account_no;
-					
-					-- Negative value given for a transaction amount
-					IF r_transactions_2.transaction_amount < 0 THEN
-						RAISE ex_invaid_1;
-					ELSE
-						v_transaction_amount_2 := r_transactions_2.transaction_amount;
-					END IF;
-									
-					-- Invalid transaction type
-					IF r_transactions_2.transaction_type <> k_transaction_type_credit OR r_transactions_2.transaction_type <> k_transaction_type_debit THEN
-						RAISE ex_invaid_2;
-					ELSE
-						v_transaction_type_2 := r_transactions_2.transaction_type;
-						--IF r_transactions_2.transaction_no_2 = v_transaction_no_2 THEN
-						-- Debits and credits are not equal
-						IF r_transactions_2.transaction_type = k_transaction_type_debit THEN
-							SELECT SUM(transaction_amount)
-								INTO v_debit_value
-								FROM new_transactions
-								WHERE r_transactions_2.transaction_no = v_transaction_no;
-						ELSIF r_transactions_2.transaction_type = k_transaction_type_credit THEN 
-							SELECT SUM(transaction_amount)
-								INTO v_credit_value
-								FROM new_transactions
-								WHERE r_transactions_2.transaction_no = v_transaction_no;
-						END IF;
 						
-						IF	v_debit_value <> v_credit_value THEN
-							RAISE ex_not_equal;
-						END IF;
+						-- Invalid account number
+						v_account_no_2 := r_transactions_2.account_no;
 						
-					END IF;
-					
-					
-					-- insert data into detail TABLE
-					INSERT INTO transaction_detail
-					VALUES (v_account_no_2, v_transaction_no_2, v_transaction_type_2, v_transaction_amount_2);
-					
-					-- update account TABLE
-					SELECT account_balance
-						INTO v_account_balance
-						FROM account
-						WHERE account_no = v_account_no_2;
-					
-					SELECT account_type_code
-						INTO v_account_type_code
-						FROM ACCOUNT
-						WHERE account_no = v_account_no_2;
-					
-					SELECT default_trans_type
-						INTO v_account_trans_type
-						FROM account_type
-						WHERE account_type_code = v_account_type_code;
-					
-					IF(v_transaction_type_2 = v_account_trans_type) THEN
-						v_account_balance := v_account_balance + v_transaction_amount_2;
-					ELSE
-						v_account_balance := v_account_balance - v_transaction_amount_2;
-					END IF;
+						-- Negative value given for a transaction amount
+						IF r_transactions_2.transaction_amount < 0 THEN
+							RAISE ex_invaid_1;
+						ELSE
+							v_transaction_amount_2 := r_transactions_2.transaction_amount;
+							
+							-- Invalid transaction type
+							IF r_transactions_2.transaction_type <> k_transaction_type_credit OR r_transactions_2.transaction_type <> k_transaction_type_debit THEN
+								RAISE ex_invaid_2;
+							ELSE
+								v_transaction_type_2 := r_transactions_2.transaction_type;
+								--IF r_transactions_2.transaction_no_2 = v_transaction_no_2 THEN
+								-- Debits and credits are not equal
+								IF r_transactions_2.transaction_type = k_transaction_type_debit THEN
+									SELECT SUM(transaction_amount)
+										INTO v_debit_value
+										FROM new_transactions
+										WHERE r_transactions_2.transaction_no = v_transaction_no;
+								ELSIF r_transactions_2.transaction_type = k_transaction_type_credit THEN 
+									SELECT SUM(transaction_amount)
+										INTO v_credit_value
+										FROM new_transactions
+										WHERE r_transactions_2.transaction_no = v_transaction_no;
+								END IF;
+								
+								IF	v_debit_value <> v_credit_value THEN
+									RAISE ex_not_equal;
+								END IF;
+								
+								-- insert data into detail TABLE
+								INSERT INTO transaction_detail
+								VALUES (v_account_no_2, v_transaction_no_2, v_transaction_type_2, v_transaction_amount_2);
+								
+								-- update account TABLE
+								SELECT account_balance
+									INTO v_account_balance
+									FROM account
+									WHERE account_no = v_account_no_2;
+								
+								SELECT account_type_code
+									INTO v_account_type_code
+									FROM ACCOUNT
+									WHERE account_no = v_account_no_2;
+								
+								SELECT default_trans_type
+									INTO v_account_trans_type
+									FROM account_type
+									WHERE account_type_code = v_account_type_code;
+								
+								IF(v_transaction_type_2 = v_account_trans_type) THEN
+									v_account_balance := v_account_balance + v_transaction_amount_2;
+								ELSE
+									v_account_balance := v_account_balance - v_transaction_amount_2;
+								END IF;
 
-					UPDATE ACCOUNT
-						SET account_balance = v_account_balance
-						WHERE account_no = v_account_no_2;
+								UPDATE ACCOUNT
+									SET account_balance = v_account_balance
+									WHERE account_no = v_account_no_2;
+								
+							END IF;
+		
+						END IF;			
+						
+					END IF;				
+					
 				END LOOP;
-				
-			-- END LOOP;
 			
 			-- delete the row in new_transactions
 			DELETE new_transactions WHERE transaction_no = r_transactions.transaction_no;
