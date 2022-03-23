@@ -98,11 +98,17 @@ BEGIN
 								
 								IF	v_debit_value <> v_credit_value THEN
 									RAISE ex_not_equal;
-								END IF;
+								--ELSE
+									-- insert data into detail TABLE
+								--	INSERT INTO transaction_detail
+								--	VALUES (v_account_no_2, v_transaction_no_2, v_transaction_type_2, v_transaction_amount_2);
+									
+								END IF;		
 								
 								-- insert data into detail TABLE
 								INSERT INTO transaction_detail
 								VALUES (v_account_no_2, v_transaction_no_2, v_transaction_type_2, v_transaction_amount_2);
+									
 								
 								-- update account TABLE
 								SELECT account_balance
@@ -142,11 +148,11 @@ BEGIN
 			DELETE new_transactions WHERE transaction_no = r_transactions.transaction_no;
 			
 			
-			COMMIT;
+			--COMMIT;
 			
 			END IF;
 
-			
+			COMMIT;
 			
 			-- EXCEPTION
 			EXCEPTION
